@@ -55,3 +55,11 @@ func (ac *adminSevice) GetByAdminNameAndPassword(username, password string) (mod
 
 	return admin, admin.AdminId != 0
 }
+/**
+ * 保存头像信息
+ */
+func (ac *adminSevice) SaveAvatarImg(adminId int64, fileName string) bool {
+	admin := model.Admin{Avatar: fileName}
+	_, err := ac.engine.Id(adminId).Cols(" avatar ").Update(&admin)
+	return err != nil
+}

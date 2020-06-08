@@ -23,6 +23,12 @@ type StatisController struct {
 	Session *sessions.Session
 }
 
+var (
+	ADMINMODULE = "ADMIN_"
+	USERMODULE  = "USER_"
+	ORDERMODULE = "ORDER_"
+)
+
 /**
  * 解析统计功能路由请求
  */
@@ -53,12 +59,50 @@ func (sc *StatisController) GetCount() mvc.Result {
 	var result int64
 	switch model {
 	case "user":
-		iris.New().Logger().Error(date) //时间
-		result = sc.Service.GetUserDailyCount(date)
+		userResult := sc.Session.Get(USERMODULE + date)
+		if userResult != nil {
+			userResult = userResult.(float64)
+			return mvc.Response{
+				Object: map[string]interface{}{
+					"status": utils.RECODE_OK,
+					"count":  userResult,
+				},
+			}
+		} else {
+			iris.New().Logger().Error(date) //时间
+			result = sc.Service.GetUserDailyCount(date)
+			//	设置缓存
+			sc.Session.Set(USERMODULE+date, result)
+		}
 	case "order":
-		result = sc.Service.GetOrderDailyCount(date)
+		orderStatis := sc.Session.Get(ORDERMODULE + date)
+		if orderStatis != nil {
+			orderStatis = orderStatis.(float64)
+			return mvc.Response{
+				Object: map[string]interface{}{
+					"status": utils.RECODE_OK,
+					"count":  orderStatis,
+				},
+			}
+		} else {
+			result = sc.Service.GetOrderDailyCount(date)
+			sc.Session.Set(ORDERMODULE+date, result)
+		}
 	case "admin":
-		result = sc.Service.GetAdminDailyCount(date)
+		adminStatis := sc.Session.Get(ADMINMODULE + date)
+		if adminStatis != nil {
+			adminStatis = adminStatis.(float64)
+			return mvc.Response{
+				Object: map[string]interface{}{
+					"status": utils.RECODE_OK,
+					"count":  adminStatis,
+				},
+			}
+		}else {
+			result = sc.Service.GetAdminDailyCount(date)
+			sc.Session.Set(ADMINMODULE,result)
+		}
+
 	}
 
 	return mvc.Response{
