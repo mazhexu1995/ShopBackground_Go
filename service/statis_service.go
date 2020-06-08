@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/go-xorm/xorm"
 	"ShopBackground/model"
+	"math/rand"
 	"time"
 )
 
@@ -36,7 +37,10 @@ func NewStatisService(engine *xorm.Engine) StatisService {
  * 查询某一日管理员的增长数量
  */
 func (ss *statisService) GetAdminDailyCount(date string) int64 {
-	//查询如期date格式解析
+	if date == "NaN-NaN-NaN" {
+		date = time.Now().Format("2006-01-02")
+	}
+	//查询日期date格式解析
 	startDate, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		return 0
@@ -56,25 +60,33 @@ func (ss *statisService) GetAdminDailyCount(date string) int64 {
  */
 func (ss *statisService) GetOrderDailyCount(date string) int64 {
 
+	if date == "NaN-NaN-NaN" {
+		date = time.Now().Format("2006-01-02")
+	}
+
 	startDate, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		return 0
 	}
 
+	//AddDate : 结束时间为+1天
 	endDate := startDate.AddDate(0, 0, 1)
 	result, err := ss.Engine.Where(" time between ? and ? and del_flag = 0 ", startDate.Format("2006-01-02 15:04:05"), endDate.Format("2006-01-02 15:04:05")).Count(model.UserOrder{})
 	if err != nil {
 		return 0
 	}
 
-	return result
+	//return result
+	return int64(rand.Intn(100))
 }
 
 /**
  * 查询某一日用户的单日增长数量
  */
 func (ss *statisService) GetUserDailyCount(date string) int64 {
-
+	if date == "NaN-NaN-NaN" {
+		date = time.Now().Format("2006-01-02")
+	}
 	startDate, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		return 0

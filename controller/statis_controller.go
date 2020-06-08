@@ -32,10 +32,11 @@ func (sc *StatisController) GetCount() mvc.Result {
 
 	var pathSlice []string
 	if path != "" {
+		// 切割成 "" "statis" "user""2019-03-10""count"
 		pathSlice = strings.Split(path, "/")
 	}
 
-	//不符合请求格式
+	//不符合请求格式 5为切割后的段数
 	if len(pathSlice) != 5 {
 		return mvc.Response{
 			Object: map[string]interface{}{
