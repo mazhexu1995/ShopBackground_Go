@@ -4,7 +4,7 @@ package model
  * 商店实体结构体定义
  */
 type Shop struct {
-	Id                          int        `xorm:"pk autoincr" json:"item_id"`      //店铺Id
+	ShopId                      int        `xorm:"pk autoincr" json:"item_id"`      //店铺Id
 	Name                        string     `xorm:"varchar(32)" json:"name"`         //店铺名称
 	Address                     string     `xorm:"varchar(128)" json:"address"`     //店铺地址
 	Latitude                    float32    `json:"latitude"`                        //经度
@@ -32,4 +32,21 @@ type Shop struct {
 	Rating                      int        `json:"rating"`                          //综合评分
 	Dele                        int        `json:"dele"`                            //是否已经被删除 1表示已经删除 0表示未删除
 	Activities                  []*Service `xorm:"-"`                               //商家提供的服务 结构体
+}
+
+/**
+ * 从数据库中查询出来的实体转变成前端所需要的json格式
+ */
+func (this *Shop) ShopToRespDesc() interface{} {
+	respDesc := map[string]interface{}{
+		"id":               this.ShopId,
+		"name":             this.Name,
+		"address":          this.Address,
+		"phone":            this.Phone,
+		"status":           this.Status,
+		"recent_order_num": this.RecentOrderNum,
+		"rating_count":     this.RatingCount,
+		"rating":           this.Rating,
+	}
+	return respDesc
 }

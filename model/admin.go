@@ -2,6 +2,9 @@ package model
 
 import (
 	"time"
+	"bytes"
+	"encoding/gob"
+	"log"
 )
 
 //定义管理员结构体
@@ -32,4 +35,30 @@ func (this *Admin) AdminToRespDesc() interface{} {
 		"admin":       "管理员",
 	}
 	return respDesc
+}
+
+/**
+ *  对象的序列化
+ */
+func (admin *Admin) Encoder() []byte {
+	var buffer bytes.Buffer
+	encoder := gob.NewEncoder(&buffer) //创建编码器
+	err1 := encoder.Encode(&admin)     //编码
+	if err1 != nil {
+		log.Panic(err1)
+	}
+	return buffer.Bytes()
+}
+
+/**
+ * 对象的反序列化
+ */
+func Decoder(data []byte) *Admin {
+	decoder := gob.NewDecoder(bytes.NewReader(data)) //创建解密器
+	var admin *Admin
+	err2 := decoder.Decode(&admin) //解密
+	if err2 != nil {
+		log.Panic(err2)
+	}
+	return admin
 }

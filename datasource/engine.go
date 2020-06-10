@@ -1,9 +1,11 @@
 package datasource
 
 import (
+	"ShopBackground/config"
 	_ "github.com/go-sql-driver/mysql" //不能忘记导入
 	"github.com/go-xorm/xorm"
 	"ShopBackground/model"
+	"github.com/kataras/iris"
 )
 
 /**
@@ -11,9 +13,19 @@ import (
  */
 func NewMysqlEngine() *xorm.Engine {
 
-	//数据库引擎
-	engine, err := xorm.NewEngine("mysql", "root:mazhexu@/test2?charset=utf8")
+	initConfig := config.InitConfig()
+	if initConfig == nil {
+		return nil
+	}
+	database := initConfig.DataBase
 
+	//"root:mazhexu@/test2?charset=utf8"
+
+	dataSourceName := database.User + ":" + database.Pwd + "@tcp(" + database.Host + ")/" + database.Database + "?charset=utf8"
+	//数据库引擎
+	engine, err := xorm.NewEngine(database.Drive, dataSourceName)
+
+	iris.New().Logger().Info(database)
 	//根据实体创建表
 	//err = engine.CreateTables(new(model.Admin))
 
@@ -30,9 +42,10 @@ func NewMysqlEngine() *xorm.Engine {
 	model.Permission),
 		new(model.City),
 		new(model.Admin),
-		new(model.AdminPermission),
 		new(model.User),
-		new(model.UserOrder))
+		new(model.UserOrder),
+		new(model.Address),
+		new(model.Shop))
 
 	if err != nil {
 		panic(err.Error())

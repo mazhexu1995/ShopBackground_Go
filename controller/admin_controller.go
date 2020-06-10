@@ -5,9 +5,9 @@ import (
 	"github.com/kataras/iris/mvc"
 	"ShopBackground/service"
 	"github.com/kataras/iris/sessions"
-	"encoding/json"
+	//"encoding/json"
 	"ShopBackground/utils"
-	"ShopBackground/model"
+	//"ShopBackground/model"
 )
 
 /**
@@ -26,7 +26,7 @@ type AdminController struct {
 
 const (
 	ADMINTABLENAME = "admin"
-	ADMIN          = "admin"
+	ADMIN          = "adminId"
 )
 
 type AdminLogin struct {
@@ -99,9 +99,9 @@ func (ac *AdminController) GetInfo() mvc.Result {
 	}
 
 	//解析数据到admin数据结构
-	var admin model.Admin
-	err := json.Unmarshal(userByte.([]byte), &admin)
-
+	//var admin model.Admin
+	//err := json.Unmarshal(userByte.([]byte), &admin)
+	adminId, err := ac.Session.GetInt64(ADMIN)
 	//解析失败
 	if err != nil {
 		return mvc.Response{
@@ -112,12 +112,23 @@ func (ac *AdminController) GetInfo() mvc.Result {
 			},
 		}
 	}
+	adminObject, exit := ac.Service.GetByAdminId(adminId)
+
+	if !exit {
+		return mvc.Response{
+			Object: map[string]interface{}{
+				"status":  "0",
+				"success": "登录失败",
+				"message": "用户名或者密码错误,请重新登录",
+			},
+		}
+	}
 
 	//解析成功
 	return mvc.Response{
 		Object: map[string]interface{}{
 			"status": utils.RECODE_OK,
-			"data":   admin.AdminToRespDesc(),
+			"data":   adminObject.AdminToRespDesc(),
 		},
 	}
 }
@@ -159,8 +170,8 @@ func (ac *AdminController) PostLogin(context iris.Context) mvc.Result {
 	}
 
 	//管理员存在 设置session
-	userByte, _ := json.Marshal(admin)
-	ac.Session.Set(ADMIN, userByte)
+	//userByte, _ := json.Marshal(admin)
+	ac.Session.Set(ADMIN, admin.AdminId)
 
 	return mvc.Response{
 		Object: map[string]interface{}{

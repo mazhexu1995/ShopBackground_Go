@@ -62,6 +62,12 @@ func mvcHandle(app *iris.Application) {
 		Expires: 24 * time.Hour,
 	})
 
+	//获取redis实例
+	redis := datasource.NewRedis()
+	//设置session的同步设置为redis
+	sessManager.UseDatabase(redis)
+
+	//实例化mysql数据库引擎
 	engine := datasource.NewMysqlEngine()
 
 	//管理员模块功能

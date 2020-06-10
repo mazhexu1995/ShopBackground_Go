@@ -11,6 +11,7 @@ require (
 	github.com/flosch/pongo2 v0.0.0-20200529170236-5abacdfa4915 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/go-xorm/xorm v0.7.9
+	github.com/gomodule/redigo/redis v0.0.0-20200429221454-e14091dffc1b // indirect
 	github.com/gorilla/schema v1.1.0 // indirect
 	github.com/iris-contrib/blackfriday v2.0.0+incompatible // indirect
 	github.com/iris-contrib/formBinder v5.0.0+incompatible // indirect

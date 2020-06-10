@@ -1,6 +1,21 @@
 {
-  "app_name": "CmsProject",
+  "app_name": "ShopBackground_Go",
   "port": "8080",
   "static_path": "/manage/static",
+  "data_base": {
+    "drive": "mysql",
+    "host": "127.0.0.1",
+    "port": "3306",
+    "user": "root",
+    "pwd": "mazhexu",
+    "database": "test2"
+  },
+  "redis": {
+    "net_work": "tcp",
+    "addr": "127.0.0.1",
+    "port": "6379",
+    "passwword": "",
+    "prefix": "test2_"
+  },
   "mode": "dev"
 }

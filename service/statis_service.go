@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/go-xorm/xorm"
 	"ShopBackground/model"
 	"math/rand"
@@ -75,7 +76,7 @@ func (ss *statisService) GetOrderDailyCount(date string) int64 {
 	if err != nil {
 		return 0
 	}
-
+	fmt.Println(result)
 	//return result
 	return int64(rand.Intn(100))
 }

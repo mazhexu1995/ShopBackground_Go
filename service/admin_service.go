@@ -14,9 +14,10 @@ type AdminService interface {
 	//通过管理员用户名+密码 获取管理员实体 如果查询到，返回管理员实体，并返回true
 	//否则 返回 nil ，false
 	GetByAdminNameAndPassword(username, password string) (model.Admin, bool)
-
+	GetByAdminId(adminId int64) (model.Admin, bool)
 	//获取管理员总数
 	GetAdminCount() (int64, error)
+	SaveAvatarImg(adminId int64, fileName string) bool
 }
 
 func NewAdminService(db *xorm.Engine) AdminService {
@@ -55,6 +56,18 @@ func (ac *adminSevice) GetByAdminNameAndPassword(username, password string) (mod
 
 	return admin, admin.AdminId != 0
 }
+
+/**
+ * 查询管理员信息
+ */
+func (ac *adminSevice) GetByAdminId(adminId int64) (model.Admin, bool) {
+	var admin model.Admin
+
+	ac.engine.Id(adminId).Get(&admin)
+
+	return admin, admin.AdminId != 0
+}
+
 /**
  * 保存头像信息
  */
