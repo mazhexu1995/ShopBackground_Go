@@ -1,13 +1,19 @@
 package service
 
-import "github.com/go-xorm/xorm"
+import (
+	"ShopBackground/model"
+	"github.com/go-xorm/xorm"
+	"github.com/kataras/iris"
+)
 
 /**
  * 商店Shop的服务
  */
 type ShopService interface {
 	//查询商店总数，并返回
-	GetShopCount() int64
+	GetShopCount() (int64, error)
+	GetShopList(offset, limit int) []model.Shop
+
 }
 
 type shopService struct {
@@ -24,6 +30,21 @@ func NewShopService(engine *xorm.Engine) ShopService {
 /**
  * 查询商店的总数然后返回
  */
-func (ss *shopService) GetShopCount() int64 {
-	return 0
+func (ss *shopService) GetShopCount() (int64, error) {
+	result, err := ss.Engine.Where(" dele = 0 ").Count(new(model.Shop))
+	return result, err
+}
+
+/**
+ * 获取到商铺列表信息
+ */
+func (ss *shopService) GetShopList(offset, limit int) []model.Shop {
+
+	shopList := make([]model.Shop, 0)
+
+	err := ss.Engine.Where(" dele = 0 ").Limit(limit, offset).Find(&shopList)
+	if err != nil {
+		iris.New().Logger().Info(err.Error())
+	}
+	return shopList
 }

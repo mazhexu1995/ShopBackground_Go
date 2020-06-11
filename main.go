@@ -4,11 +4,14 @@ import (
 	"ShopBackground/config"
 	"ShopBackground/controller"
 	"ShopBackground/datasource"
+	"ShopBackground/model"
 	"ShopBackground/service"
+	"ShopBackground/utils"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/context"
 	"github.com/kataras/iris/mvc"
 	"github.com/kataras/iris/sessions"
+	"strconv"
 	"time"
 )
 
@@ -90,6 +93,47 @@ func mvcHandle(app *iris.Application) {
 	)
 	user.Handle(new(controller.UserController))
 
+	//获取用户详细信息
+	app.Get("/v1/user/{user_name}", func(context context.Context) {
+		userName := context.Params().Get("user_name")
+		var user model.User
+		_, err := engine.Where(" user_name = ? ", userName).Get(&user)
+		if err != nil {
+			context.JSON(iris.Map{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_USERINFO,
+				"message": utils.Recode2Text(utils.RESPMSG_ERROR_USERINFO),
+			})
+		} else {
+			context.JSON(user)
+		}
+	})
+	//获取地址信息
+	app.Get("/v1/addresse/{address_id}", func(context context.Context) {
+		address_id := context.Params().Get("address_id")
+
+		addressID, err := strconv.Atoi(address_id)
+		if err != nil {
+			context.JSON(iris.Map{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_ORDERINFO,
+				"message": utils.Recode2Text(utils.RESPMSG_ERROR_ORDERINFO),
+			})
+		}
+
+		var address model.Address
+		_, err = engine.Id(addressID).Get(&address)
+		if err != nil {
+			context.JSON(iris.Map{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_ORDERINFO,
+				"message": utils.Recode2Text(utils.RESPMSG_ERROR_ORDERINFO),
+			})
+		}
+		//查询数据成功
+		context.JSON(address)
+	})
+
 	//统计功能模块
 	statisService := service.NewStatisService(engine)
 	statis := mvc.New(app.Party("/statis/{model}/{date}/"))
@@ -98,6 +142,25 @@ func mvcHandle(app *iris.Application) {
 		sessManager.Start,
 	)
 	statis.Handle(new(controller.StatisController))
+
+	//	订单模块
+	orderService := service.NewOrderService(engine)
+	order := mvc.New(app.Party("/bos/orders/"))
+	order.Register(
+		orderService,
+		sessManager.Start,
+	)
+	order.Handle(new(controller.OrderController)) //控制器
+
+	//商铺模块
+	shopService := service.NewShopService(engine)
+	shop := mvc.New(app.Party("/shopping/restaurants"))
+	shop.Register(
+		shopService,
+		sessManager.Start,
+	)
+	shop.Handle(new(controller.ShopController)) //控制器
+
 }
 
 /**

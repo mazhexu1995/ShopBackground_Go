@@ -31,7 +31,7 @@ func (user *User) UserToRespDesc() interface{} {
 		"user_id":      user.Id,
 		"username":     user.UserName,
 		"city":         user.CityName,
-		"registe_time": utils.FormatDatetime(user.RegisterTime),
+		"register_time": utils.FormatDatetime(user.RegisterTime),
 		"mobile":       user.Mobile,
 		"is_active":    user.IsActive,
 		"balance":      user.Balance,

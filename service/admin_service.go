@@ -3,6 +3,7 @@ package service
 import (
 	"ShopBackground/model"
 	"github.com/go-xorm/xorm"
+	"github.com/kataras/iris"
 )
 
 /**
@@ -18,6 +19,7 @@ type AdminService interface {
 	//获取管理员总数
 	GetAdminCount() (int64, error)
 	SaveAvatarImg(adminId int64, fileName string) bool
+	GetAdminList(offset, limit int) []*model.Admin
 }
 
 func NewAdminService(db *xorm.Engine) AdminService {
@@ -75,4 +77,20 @@ func (ac *adminSevice) SaveAvatarImg(adminId int64, fileName string) bool {
 	admin := model.Admin{Avatar: fileName}
 	_, err := ac.engine.Id(adminId).Cols(" avatar ").Update(&admin)
 	return err != nil
+}
+/**
+ * 获取管理员列表
+ * offset：获取管理员的便宜量
+ * limit：请求管理员的条数
+ */
+func (ac *adminSevice) GetAdminList(offset, limit int) []*model.Admin {
+	var adminList []*model.Admin
+
+	err := ac.engine.Limit(limit, offset).Find(&adminList)
+	if err != nil {
+		iris.New().Logger().Error(err.Error())
+		panic(err.Error())
+		return nil
+	}
+	return adminList
 }

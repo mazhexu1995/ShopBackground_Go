@@ -47,6 +47,8 @@ func (this *Shop) ShopToRespDesc() interface{} {
 		"recent_order_num": this.RecentOrderNum,
 		"rating_count":     this.RatingCount,
 		"rating":           this.Rating,
+		"description":      this.Description,
+		"category":         this.Category,
 	}
 	return respDesc
 }

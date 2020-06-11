@@ -5,6 +5,8 @@ import (
 	"github.com/kataras/iris/mvc"
 	"ShopBackground/service"
 	"github.com/kataras/iris/sessions"
+	"strconv"
+
 	//"encoding/json"
 	"ShopBackground/utils"
 	//"ShopBackground/model"
@@ -181,4 +183,70 @@ func (ac *AdminController) PostLogin(context iris.Context) mvc.Result {
 		},
 	}
 
+}
+/**
+ * 获取所有的管理员列表
+ * url：
+ */
+func (ac *AdminController) GetAll() mvc.Result {
+	iris.New().Logger().Info(" 获取所有管理员列表 ")
+
+	offsetStr := ac.Ctx.FormValue("offset")
+	limitStr := ac.Ctx.FormValue("limit")
+	var offset int
+	var limit int
+
+	//判断offset和limit两个变量任意一个都不能为""
+	if offsetStr == "" || limitStr == "" {
+		return mvc.Response{
+			Object: map[string]interface{}{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_USERLIST,
+				"message": utils.Recode2Text(utils.RESPMSG_ERROR_USERLIST),
+			},
+		}
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	limit, err = strconv.Atoi(limitStr)
+	if err != nil {
+		return mvc.Response{
+			Object: map[string]interface{}{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_USERLIST,
+				"message": utils.Recode2Text(utils.RESPMSG_ERROR_USERLIST),
+			},
+		}
+	}
+
+	//做页数的限制检查
+	if offset <= 0 {
+		offset = 0
+	}
+
+	//做最大的限制
+	if limit > MaxLimit {
+		limit = MaxLimit
+	}
+
+	adminList := ac.Service.GetAdminList(offset, limit)
+	if len(adminList) == 0 {
+		return mvc.Response{
+			Object: map[string]interface{}{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_USERLIST,
+				"message": utils.Recode2Text(utils.RESPMSG_ERROR_USERLIST),
+			},
+		}
+	}
+	var respList []interface{}
+	for _, admin := range adminList {
+		respList = append(respList, admin.AdminToRespDesc())
+	}
+	return mvc.Response{
+		Object: map[string]interface{}{
+			"status": utils.RECODE_OK,
+			"data":   respList,
+		},
+	}
 }

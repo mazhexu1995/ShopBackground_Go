@@ -34,12 +34,15 @@ func NewOrderService(db *xorm.Engine) OrderService {
 func (orderService *orderService) GetOrderList(offset, limit int) []model.OrderDetail {
 
 	orderList := make([]model.OrderDetail, 0)
+	//查询用户订单详细信息 多表查询
 	err := orderService.Engine.Table("user_order").
-		Join("INNER", "order_status", " order_status.id = user_order.order_status_id ").
+		Join("INNER", "order_status", " order_status.status_id = user_order.order_status_id ").
 		Join("INNER", "user", " user.id = user_order.user_id").
 		Join("INNER", "shop", " shop.shop_id = user_order.shop_id ").
 		Join("INNER", "address", " address.address_id = user_order.address_id ").
 		Find(&orderList)
+
+	iris.New().Logger().Info(orderList[0])
 	if err != nil {
 		iris.New().Logger().Error(err.Error())
 		panic(err.Error())
