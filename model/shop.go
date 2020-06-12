@@ -1,5 +1,7 @@
 package model
 
+import "strconv"
+
 /**
  * 商店实体结构体定义
  */
@@ -10,7 +12,7 @@ type Shop struct {
 	Latitude                    float32    `json:"latitude"`                        //经度
 	Longitude                   float32    `json:"longitude"`                       //纬度
 	Description                 string     `xorm:"varchar(255)" json:"description"` //店铺简介
-	Phone                       string     `json:"phone"`                           //店铺电话
+	Phone                       int     `json:"phone"`                           //店铺电话
 	PromotionInfo               string     `json:"promotion_info"`                  //店铺标语
 	FloatDeliveryFee            int        `json:"float_delivery_fee"`              //配送费
 	FloatMinimumOrderAmount     int        `json:"float_minimum_order_amount"`      //起送价
@@ -42,7 +44,7 @@ func (this *Shop) ShopToRespDesc() interface{} {
 		"id":               this.ShopId,
 		"name":             this.Name,
 		"address":          this.Address,
-		"phone":            this.Phone,
+		"phone":            strconv.Itoa(this.Phone),
 		"status":           this.Status,
 		"recent_order_num": this.RecentOrderNum,
 		"rating_count":     this.RatingCount,
