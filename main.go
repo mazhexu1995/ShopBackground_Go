@@ -11,6 +11,8 @@ import (
 	"github.com/kataras/iris/context"
 	"github.com/kataras/iris/mvc"
 	"github.com/kataras/iris/sessions"
+	"io"
+	"os"
 	"strconv"
 	"time"
 )
@@ -37,13 +39,16 @@ func main() {
 func newApp() *iris.Application {
 	app := iris.New()
 
+	//设定应用图标
+	app.Favicon("./static/favicons/favicon.ico")
+
 	//设置日志级别  开发阶段为debug
 	app.Logger().SetLevel("debug")
 
 	//注册静态资源
 	app.StaticWeb("/static", "./static")
 	app.StaticWeb("/manage/static", "./static")
-	app.StaticWeb("/img", "./static/img")
+	app.StaticWeb("/img", "./uploads")
 
 	//注册视图文件
 	app.RegisterView(iris.HTML("./static", ".html"))
@@ -160,6 +165,133 @@ func mvcHandle(app *iris.Application) {
 		sessManager.Start,
 	)
 	shop.Handle(new(controller.ShopController)) //控制器
+
+	//添加食品类别
+	categoryService := service.NewCategoryService(engine)
+	category := mvc.New(app.Party("/shopping/"))
+	category.Register(
+		categoryService,
+	)
+	category.Handle(new(controller.CategoryController)) //控制器
+
+	//食品模块
+	foodService := service.NewFoodService(engine)
+	foodMvc := mvc.New(app.Party("/shopping/v2/foods/"))
+	foodMvc.Register(
+		foodService,
+	)
+	foodMvc.Handle(new(controller.FoodController)) //控制器
+
+
+
+	//文件上传
+	app.Post("/admin/update/avatar/{adminId}", func(context context.Context) {
+		adminId := context.Params().Get("adminId")
+		iris.New().Logger().Info(adminId)
+
+		file, info, err := context.FormFile("file")
+		if err != nil {
+			iris.New().Logger().Info(err.Error())
+			context.JSON(iris.Map{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_PICTUREADD,
+				"failure": utils.Recode2Text(utils.RESPMSG_ERROR_PICTUREADD),
+			})
+			return
+		}
+		defer file.Close()
+		fname := info.Filename
+
+		out, err := os.OpenFile("uploads/"+fname, os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			iris.New().Logger().Info(err.Error())
+			context.JSON(iris.Map{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_PICTUREADD,
+				"failure": utils.Recode2Text(utils.RESPMSG_ERROR_PICTUREADD),
+			})
+			return
+		}
+		iris.New().Logger().Info("文件路径：" + out.Name())
+		defer out.Close()
+		_, err = io.Copy(out, file)
+		if err != nil {
+			context.JSON(iris.Map{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_PICTUREADD,
+				"failure": utils.Recode2Text(utils.RESPMSG_ERROR_PICTUREADD),
+			})
+			return
+		}
+
+		intAdminId, _ := strconv.Atoi(adminId)
+		adminService.SaveAvatarImg(int64(intAdminId), fname)
+		context.JSON(iris.Map{
+			"status":     utils.RECODE_OK,
+			"image_path": fname,
+		})
+	})
+	//上传图片
+	app.Post("/v1/addimg/{model}", func(context context.Context) {
+		model := context.Params().Get("model")
+		iris.New().Logger().Info(model)
+
+		file, info, err := context.FormFile("file")
+		if err != nil {
+			iris.New().Logger().Info(err.Error())
+			context.JSON(iris.Map{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_PICTUREADD,
+				"failure": utils.Recode2Text(utils.RESPMSG_ERROR_PICTUREADD),
+			})
+			return
+		}
+		defer file.Close()
+		fname := info.Filename
+
+		//判断上传的目录是否存在，如果不存在的话，先创建目录
+		isExist, err := utils.PathExists("uploads/" + model)
+
+		if !isExist {
+			err := os.Mkdir("uploads/"+model, 0777)
+			if err != nil {
+				context.JSON(iris.Map{
+					"status":  utils.RECODE_FAIL,
+					"type":    utils.RESPMSG_ERROR_PICTUREADD,
+					"failure": utils.Recode2Text(utils.RESPMSG_ERROR_PICTUREADD),
+				})
+				return
+			}
+		}
+
+		out, err := os.OpenFile("uploads/"+model+"/"+fname, os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			iris.New().Logger().Info(err.Error())
+			context.JSON(iris.Map{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_PICTUREADD,
+				"failure": utils.Recode2Text(utils.RESPMSG_ERROR_PICTUREADD),
+			})
+			return
+		}
+		iris.New().Logger().Info("文件路径：" + out.Name())
+		defer out.Close()
+		_, err = io.Copy(out, file)
+		if err != nil {
+			context.JSON(iris.Map{
+				"status":  utils.RECODE_FAIL,
+				"type":    utils.RESPMSG_ERROR_PICTUREADD,
+				"failure": utils.Recode2Text(utils.RESPMSG_ERROR_PICTUREADD),
+			})
+			return
+		}
+
+		//上传成功
+		context.JSON(iris.Map{
+			"status":     utils.RECODE_OK,
+			"image_path": fname,
+		})
+	})
 
 }
 

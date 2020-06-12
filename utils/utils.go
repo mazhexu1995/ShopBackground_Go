@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/kataras/iris"
 	"github.com/wonderivan/logger"
+	"os"
 	"reflect"
 	"time"
 )
@@ -68,4 +69,18 @@ func LogDebug(app *iris.Application, v ...interface{}) {
  */
 func FormatDatetime(time time.Time) string {
 	return time.Format("2006-01-02 03:04:05")
+}
+/**
+ * 判断某个路径是否存在
+ * 返回两个值：第一个值为路径是否存在；第二个值返回error
+ */
+func PathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
